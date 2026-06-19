@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo List</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>Todo List</h1>
+
+    <!-- Add form -->
+    <form id="add-form" class="add-form">
+      <input
+        type="text"
+        id="todo-input"
+        class="todo-input"
+        placeholder="Enter a new todo..."
+        autocomplete="off"
+      />
+      <button type="submit" class="btn btn-submit">Submit</button>
+    </form>
+
+    <!-- Two lists -->
+    <section class="lists">
+      <div class="list-column">
+        <h2>Pending</h2>
+        <ul id="pending-list" class="todo-list"></ul>
+      </div>
+
+      <div class="list-column">
+        <h2>Completed</h2>
+        <ul id="completed-list" class="todo-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

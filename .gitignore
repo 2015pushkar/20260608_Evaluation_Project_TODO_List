@@ -1,0 +1,8 @@
+# Local planning & assessment instructions — do NOT commit
+plan.md
+images_test/
+
+# Common
+node_modules/
+.DS_Store
+*.log
