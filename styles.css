@@ -139,6 +139,31 @@ h1 {
   font-size: 0.85rem;
 }
 
+/* Pagination */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.page-btn {
+  min-width: 2.1rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+}
+
+.page-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* Responsive: stack columns on small screens */
 @media (max-width: 640px) {
   .lists {

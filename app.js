@@ -7,6 +7,7 @@
 
 const API_BASE = "https://dummyjson.com/todos";
 const STORAGE_KEY = "todos";
+const PAGE_SIZE = 10; // pending-list items per page
 
 // =====================================================================
 //  MODEL
@@ -125,11 +126,15 @@ const Model = {
 const View = {
   pendingList: document.getElementById("pending-list"),
   completedList: document.getElementById("completed-list"),
+  pendingPagination: document.getElementById("pending-pagination"),
   addForm: document.getElementById("add-form"),
   todoInput: document.getElementById("todo-input"),
 
   // Id of the todo currently being edited inline (null = none).
   editingId: null,
+
+  // Current page of the Pending list (1-based).
+  currentPage: 1,
 
   escapeHtml(str) {
     return String(str)
@@ -170,12 +175,47 @@ const View = {
   },
 
   render() {
-    this.pendingList.innerHTML = Model.getPending()
+    const pending = Model.getPending();
+    const totalPages = Math.max(1, Math.ceil(pending.length / PAGE_SIZE));
+
+    // Clamp page in case items were removed/toggled off the current page.
+    if (this.currentPage > totalPages) this.currentPage = totalPages;
+    if (this.currentPage < 1) this.currentPage = 1;
+
+    const start = (this.currentPage - 1) * PAGE_SIZE;
+    const pageItems = pending.slice(start, start + PAGE_SIZE);
+
+    this.pendingList.innerHTML = pageItems
       .map((t) => this.todoItemHtml(t))
       .join("");
     this.completedList.innerHTML = Model.getCompleted()
       .map((t) => this.todoItemHtml(t))
       .join("");
+
+    this.renderPagination(totalPages);
+  },
+
+  // Build Prev / numbered / Next controls for the Pending list.
+  renderPagination(totalPages) {
+    if (totalPages <= 1) {
+      this.pendingPagination.innerHTML = ""; // nothing to page through
+      return;
+    }
+
+    let html = `<button class="btn page-btn" data-action="prev" ${
+      this.currentPage === 1 ? "disabled" : ""
+    }>Prev</button>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+      const active = i === this.currentPage ? " active" : "";
+      html += `<button class="btn page-btn${active}" data-action="page" data-page="${i}">${i}</button>`;
+    }
+
+    html += `<button class="btn page-btn" data-action="next" ${
+      this.currentPage === totalPages ? "disabled" : ""
+    }>Next</button>`;
+
+    this.pendingPagination.innerHTML = html;
   },
 
   clearInput() {
@@ -225,6 +265,20 @@ const Controller = {
     // Enter = save, Escape = cancel, while editing inline.
     View.pendingList.addEventListener("keydown", (e) => this.handleListKeydown(e));
     View.completedList.addEventListener("keydown", (e) => this.handleListKeydown(e));
+    // Event delegation for the pagination controls.
+    View.pendingPagination.addEventListener("click", (e) => this.handlePageClick(e));
+  },
+
+  handlePageClick(e) {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn || btn.disabled) return;
+
+    const action = btn.dataset.action;
+    if (action === "prev") View.currentPage -= 1;
+    else if (action === "next") View.currentPage += 1;
+    else if (action === "page") View.currentPage = Number(btn.dataset.page);
+
+    View.render();
   },
 
   async handleAdd(e) {
@@ -234,6 +288,7 @@ const Controller = {
     try {
       await Model.add(title);
       View.clearInput();
+      View.currentPage = 1; // new item lands at the top of page 1
       View.render();
     } catch (err) {
       console.error("Failed to add todo:", err);
