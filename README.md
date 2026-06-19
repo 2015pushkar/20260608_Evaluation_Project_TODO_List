@@ -34,11 +34,14 @@ page refresh. Inspect it in DevTools → **Application → Local Storage**.
 ## Tech & architecture
 
 - Plain **HTML / CSS / JavaScript** — no frameworks or libraries.
-- **Single-file MVC** in `app.js`:
-  - **Model** — owns the `todos` state, API calls, and `localStorage`. The only
-    place state mutates.
-  - **View** — pure rendering (lists, items, pagination). No business logic.
-  - **Controller** — wires DOM events to Model methods, then re-renders.
+- **MVC split into ES modules** under `js/`:
+  - **config** — shared constants (API base, storage key, page size).
+  - **api** — transport layer: the fetch calls and endpoints.
+  - **model** — owns the `todos` state, `localStorage`, and orchestrates the API.
+    The only place state mutates.
+  - **view** — pure rendering (lists, items, pagination). No business logic.
+  - **controller** — wires DOM events to Model methods, then re-renders.
+  - **main** — entry point that boots the controller.
 - **Event delegation** — one click listener per list container (and one for the
   pagination controls) handles all item buttons efficiently.
 
@@ -60,19 +63,28 @@ later loads, the cached data is used (so your changes are preserved).
 
 ## Running locally
 
-No build step. Either:
+No build step, but the app uses ES modules, so it **must be served over HTTP**
+(ES modules don't load from `file://`). Use any static server:
 
-- **Double-click `index.html`** to open it in a browser, or
-- Serve it with a local server (e.g. VS Code **Live Server**) — recommended, since
-  `localStorage` behaves more predictably under an `http://` origin than `file://`.
+- VS Code **Live Server** (recommended), or
+- `npx serve`, or
+- `python -m http.server`
+
+Then open the served URL (e.g. `http://127.0.0.1:5500`).
 
 ## Project structure
 
 ```
 .
-├── index.html      # markup: add form + Pending/Completed lists + pagination
-├── styles.css      # layout and styling
-├── app.js          # Model / View / Controller
-├── images/         # screenshots used in this README
+├── index.html        # markup: add form + Pending/Completed lists + pagination
+├── styles.css        # layout and styling
+├── js/
+│   ├── config.js     # constants (API base, storage key, page size)
+│   ├── api.js        # transport layer (fetch calls)
+│   ├── model.js      # state + localStorage; orchestrates the API
+│   ├── view.js       # rendering only
+│   ├── controller.js # wires events; imports model + view
+│   └── main.js       # entry point
+├── images/           # screenshots used in this README
 └── README.md
 ```
