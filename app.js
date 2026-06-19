@@ -6,6 +6,7 @@
 // =====================================================================
 
 const API_BASE = "https://dummyjson.com/todos";
+const STORAGE_KEY = "todos";
 
 // =====================================================================
 //  MODEL
@@ -29,12 +30,24 @@ const Model = {
     return this.todos.reduce((max, t) => Math.max(max, t.id), 0) + 1;
   },
 
-  // GET initial todos from the API.
+  // Write current state to localStorage so it survives refresh.
+  save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.todos));
+  },
+
+  // Load state: prefer localStorage (persisted changes); fall back to the API
+  // seed on the first ever visit, then save that seed locally.
   async load() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      this.todos = JSON.parse(stored);
+      return;
+    }
     const res = await fetch(API_BASE);
     if (!res.ok) throw new Error(`GET failed: ${res.status}`);
     const data = await res.json();
     this.todos = data.todos || [];
+    this.save();
   },
 
   // POST a new todo, then update local state.
@@ -48,6 +61,7 @@ const Model = {
     await res.json(); // confirm success; we use our own id (see nextLocalId)
 
     this.todos.unshift({ id: this.nextLocalId(), todo: title, completed: false });
+    this.save();
   },
 
   // DELETE a todo, then remove from local state.
@@ -62,6 +76,7 @@ const Model = {
       console.warn("DELETE not persisted on server:", err.message);
     }
     this.todos = this.todos.filter((t) => t.id !== id);
+    this.save();
   },
 
   // PATCH completed flag, then flip it locally so the item moves lists.
@@ -81,6 +96,7 @@ const Model = {
       console.warn("PATCH not persisted on server:", err.message);
     }
     todo.completed = newCompleted;
+    this.save();
   },
 
   // PATCH the title, then update local state.
@@ -99,6 +115,7 @@ const Model = {
       console.warn("PATCH (edit) not persisted on server:", err.message);
     }
     todo.todo = newTitle;
+    this.save();
   },
 };
 
