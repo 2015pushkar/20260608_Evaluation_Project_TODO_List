@@ -37,8 +37,11 @@ export const Model = {
     }
     const data = await Api.getAll();
     this.todos = data.todos || [];
+    console.log("Loaded todos from API:", this.todos); 
     this.save();
   },
+
+
 
   // POST a new todo, then update local state.
   async add(title) {

@@ -4,10 +4,10 @@ import { View } from "./view.js";
 
 export const Controller = {
   async init() {
-    this.bindEvents();
+    this.bindEvents(); // wire up all the click/keydown/submit events
     try {
-      await Model.load();
-      View.render();
+      await Model.load(); // load todos (localStorage, or API on first visit)
+      View.render(); // draw the initial UI
     } catch (err) {
       console.error("Failed to load todos:", err);
     }
@@ -16,10 +16,10 @@ export const Controller = {
   bindEvents() {
     View.addForm.addEventListener("submit", (e) => this.handleAdd(e));
     // Event delegation: one listener per container handles all item buttons.
-    View.pendingList.addEventListener("click", (e) => this.handleListClick(e));
+    View.pendingList.addEventListener("click", (e) => this.handleListClick(e)); // Listens for: any click inside the Pending <ul> - Handle Delete / Toggle / Edit / Save button clicks on pending todos
     View.completedList.addEventListener("click", (e) => this.handleListClick(e));
     // Enter = save, Escape = cancel, while editing inline.
-    View.pendingList.addEventListener("keydown", (e) => this.handleListKeydown(e));
+    View.pendingList.addEventListener("keydown", (e) => this.handleListKeydown(e)); // Listens for: any key press inside the Pending <ul> - Catch Enter (save) / Escape (cancel) while inline-editing a pending todo
     View.completedList.addEventListener("keydown", (e) =>
       this.handleListKeydown(e)
     );
@@ -27,10 +27,20 @@ export const Controller = {
     View.pendingPagination.addEventListener("click", (e) =>
       this.handlePageClick(e)
     );
+    // Live search: "input" fires on every keystroke (unlike "change").
+    View.searchInput.addEventListener("input", (e) => this.handleSearch(e));
   },
 
+  // Filter both lists as the user types.
+  handleSearch(e) {
+    View.searchQuery = e.target.value;
+    View.currentPage = 1; // jump back to page 1 so results are visible
+    View.render();
+  },
+
+  // Handle clicks on the pagination controls.
   handlePageClick(e) {
-    const btn = e.target.closest("button[data-action]");
+    const btn = e.target.closest("button[data-action]"); 
     if (!btn || btn.disabled) return;
 
     const action = btn.dataset.action;
@@ -42,7 +52,7 @@ export const Controller = {
   },
 
   async handleAdd(e) {
-    e.preventDefault();
+    e.preventDefault(); // prevent the default form submission and page reload
     const title = View.todoInput.value.trim();
     if (!title) return; // guard against empty / whitespace-only input
     try {
@@ -56,6 +66,7 @@ export const Controller = {
   },
 
   async handleListClick(e) {
+    console.log("List click:", e);
     const button = e.target.closest("button[data-action]");
     if (!button) return; // clicked somewhere other than an action button
 
@@ -86,9 +97,9 @@ export const Controller = {
 
   handleListKeydown(e) {
     if (!e.target.classList.contains("todo-edit-input")) return;
-    const id = Number(e.target.closest(".todo-item").dataset.id);
+    const id = Number(e.target.closest(".todo-item").dataset.id); // helps you find the nearest parent element with the class "todo-item"
     if (e.key === "Enter") {
-      e.preventDefault();
+      e.preventDefault(); // prevent the default form submission and page reload
       this.handleSave(id);
     } else if (e.key === "Escape") {
       View.editingId = null;

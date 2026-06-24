@@ -7,10 +7,16 @@ and all changes persist locally via `localStorage`.
 ## Screenshots
 
 ### Application UI
-Two lists (Pending / Completed) with add, inline edit, delete, move-between-lists,
-and pagination on the Pending list.
+Two lists (Pending / Completed) with a live search box, add, inline edit, delete,
+move-between-lists, and pagination on the Pending list.
 
 ![Todo List UI](images/application%20ui.png)
+
+### Search / filter
+Type in the search box to filter both lists live (case-insensitive substring
+match). Filtering runs on every keystroke.
+
+![Filter tasks](images/filter_tasks_card.png)
 
 ### Persistence (localStorage)
 Every change is written to `localStorage` under the `todos` key, so tasks survive a
@@ -21,6 +27,9 @@ page refresh. Inspect it in DevTools → **Application → Local Storage**.
 ## Features
 
 - **Two lists** — Pending and Completed; items move between them when toggled.
+- **Search / filter** — a search box filters both lists live as you type
+  (case-insensitive substring match). Filtering happens on every keystroke and
+  resets the Pending list to page 1 so matches are visible.
 - **Add** — type a task and click **Submit** (or press Enter).
 - **Delete** — remove any task.
 - **Toggle complete** — the arrow button moves a task between lists, driven by the
@@ -76,7 +85,7 @@ Then open the served URL (e.g. `http://127.0.0.1:5500`).
 
 ```
 .
-├── index.html        # markup: add form + Pending/Completed lists + pagination
+├── index.html        # markup: search box + add form + Pending/Completed lists + pagination
 ├── styles.css        # layout and styling
 ├── js/
 │   ├── config.js     # constants (API base, storage key, page size)

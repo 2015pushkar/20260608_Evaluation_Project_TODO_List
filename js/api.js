@@ -6,13 +6,13 @@ import { API_BASE } from "./config.js";
 // returns the parsed response body.
 async function request(url, method = "GET", body) {
   const options = { method };
-  if (body !== undefined) {
-    options.headers = { "Content-Type": "application/json" };
-    options.body = JSON.stringify(body);
+  if (body !== undefined) {  // adding new properties to the options object
+    options.headers = { "Content-Type": "application/json" }; // tell server we're sending JSON as the request body
+    options.body = JSON.stringify(body); // convert the request body to a JSON string  - HTTP sends data as text/bytes
   }
   const res = await fetch(url, options);
   if (!res.ok) throw new Error(`${method} failed: ${res.status}`);
-  return res.json();
+  return res.json(); // converts the response body to a JavaScript object or array of objects
 }
 
 export const Api = {

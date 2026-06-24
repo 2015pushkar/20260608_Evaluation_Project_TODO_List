@@ -40,9 +40,20 @@ h1 {
   outline: none;
 }
 
-.todo-input:focus {
+.todo-input:focus,
+.search-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  border: 1px solid #cbd2d9;
+  border-radius: 6px;
+  outline: none;
 }
 
 /* Buttons */

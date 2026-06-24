@@ -9,12 +9,16 @@ export const View = {
   pendingPagination: document.getElementById("pending-pagination"),
   addForm: document.getElementById("add-form"),
   todoInput: document.getElementById("todo-input"),
+  searchInput: document.getElementById("search"),
 
   // Id of the todo currently being edited inline (null = none).
   editingId: null,
 
   // Current page of the Pending list (1-based).
   currentPage: 1,
+
+  // Live search text. Empty string = show everything.
+  searchQuery: "",
 
   escapeHtml(str) {
     return String(str)
@@ -54,21 +58,29 @@ export const View = {
     `;
   },
 
+  // Case-insensitive substring match against the search box.
+  matchesSearch(todo) {
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) return true; // no query -> everything matches
+    return todo.todo.toLowerCase().includes(q);
+  },
+
   render() {
-    const pending = Model.getPending();
+    const pending = Model.getPending().filter((t) => this.matchesSearch(t));
+    const completed = Model.getCompleted().filter((t) => this.matchesSearch(t));
     const totalPages = Math.max(1, Math.ceil(pending.length / PAGE_SIZE));
 
     // Clamp page in case items were removed/toggled off the current page.
     if (this.currentPage > totalPages) this.currentPage = totalPages;
     if (this.currentPage < 1) this.currentPage = 1;
 
-    const start = (this.currentPage - 1) * PAGE_SIZE;
+    const start = (this.currentPage - 1) * PAGE_SIZE; // arrays start indexing from 0, so the code has to convert the page number into an array position.
     const pageItems = pending.slice(start, start + PAGE_SIZE);
 
     this.pendingList.innerHTML = pageItems
       .map((t) => this.todoItemHtml(t))
       .join("");
-    this.completedList.innerHTML = Model.getCompleted()
+    this.completedList.innerHTML = completed
       .map((t) => this.todoItemHtml(t))
       .join("");
 
@@ -88,8 +100,10 @@ export const View = {
 
     for (let i = 1; i <= totalPages; i++) {
       const active = i === this.currentPage ? " active" : "";
-      html += `<button class="btn page-btn${active}" data-action="page" data-page="${i}">${i}</button>`;
-    }
+      html += `<button class="btn page-btn${active}" data-action="page" data-page="${i}">${i}</button>`; /* data-* attribute — a standard HTML feature for attaching your own custom info to an element. 
+      The browser ignores them for rendering; they're just little labels stash on an element to read back later in JavaScript.
+      */
+      }
 
     html += `<button class="btn page-btn" data-action="next" ${
       this.currentPage === totalPages ? "disabled" : ""
@@ -106,11 +120,11 @@ export const View = {
   startEdit(id) {
     this.editingId = id;
     this.render();
-    const input = document.querySelector(".todo-edit-input");
+    const input = document.querySelector(".todo-edit-input"); // get the element by id, class, html tag
     if (input) {
       input.focus();
       const end = input.value.length;
-      input.setSelectionRange(end, end);
+      input.setSelectionRange(end, end); // Places the cursor at the end of the existing text
     }
   },
 
